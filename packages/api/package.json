@@ -1,25 +1,26 @@
 {
-  "name": "@qamarero/api",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {},
-  "devDependencies": {
-    "typescript": "catalog:",
-    "@qamarero/config": "workspace:*"
-  },
-  "dependencies": {
-    "@trpc/server": "catalog:",
-    "@trpc/client": "catalog:",
-    "next": "^16.0.10",
-    "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@qamarero/db": "workspace:*"
-  }
+	"name": "@qamarero/api",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"@qamarero/config": "workspace:*"
+	},
+	"dependencies": {
+		"@trpc/server": "catalog:",
+		"@trpc/client": "catalog:",
+		"next": "^16.0.10",
+		"dotenv": "catalog:",
+		"zod": "catalog:",
+		"@qamarero/db": "workspace:*",
+		"drizzle-orm": "^0.45.1"
+	}
 }

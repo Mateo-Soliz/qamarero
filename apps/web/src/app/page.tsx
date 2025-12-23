@@ -1,47 +1,60 @@
 "use client";
+import { useDebounce } from "@qamarero/ui/hooks/use-debounce";
 import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
+import { useQueryState } from "nuqs";
+import { Suspense } from "react";
 
+import { TableList } from "@/components/table-list";
+import { TableListEmpty } from "@/components/table-list-empty";
+import { TableListSkeleton } from "@/components/table-list-skeleton";
+import { Input } from "@/components/ui/input";
 import { trpc } from "@/utils/trpc";
 
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function HomeContent() {
+	const [searchQuery, setSearchQuery] = useQueryState("search", {
+		defaultValue: "",
+		clearOnDefault: true,
+	});
 
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
+	const debouncedSearch = useDebounce(searchQuery, 300);
+
+	const tablesQuery = useQuery(
+		trpc.tables.getAll.queryOptions({
+			search: debouncedSearch || undefined,
+		}),
+	);
+
+	return (
+		<main className="w-full mx-auto max-w-4xl px-4 py-6 z-0">
+			<div className="mb-6">
+				<div className="relative  w-full">
+					<Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+					<Input
+						type="text"
+						placeholder="Buscar mesa..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="pl-11 h-12 rounded-xl border-2 bg-card text-base"
+					/>
+				</div>
+			</div>
+
+			{tablesQuery.isLoading && <TableListSkeleton />}
+			{tablesQuery.isSuccess && tablesQuery.data.length === 0 && (
+				<TableListEmpty />
+			)}
+			{tablesQuery.isSuccess && tablesQuery.data.length > 0 && (
+				<TableList tables={tablesQuery.data} />
+			)}
+		</main>
+	);
+}
 
 export default function Home() {
-  const healthCheck = useQuery(trpc.healthCheck.queryOptions());
-
-  return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck.isLoading
-                ? "Checking..."
-                : healthCheck.data
-                  ? "Connected"
-                  : "Disconnected"}
-            </span>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
+	return (
+		<Suspense fallback={<TableListSkeleton />}>
+			<HomeContent />
+		</Suspense>
+	);
 }
